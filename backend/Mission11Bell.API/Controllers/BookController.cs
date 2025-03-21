@@ -12,10 +12,20 @@ namespace Mission11Bell.API.Controllers
         public BookController(BookDbContext temp) => _bookContext = temp;
 
         [HttpGet("AllBooks")]
-        public IEnumerable<Book> GetProjects()
+        public IActionResult GetProjects(int pageHowMany = 5, int pageNum = 1)
         {
-            var something = _bookContext.Books.ToList();
-            return something;
+            var something = _bookContext.Books
+            .Skip((pageNum - 1) * pageHowMany)
+            .Take(pageHowMany)
+            .ToList();
+
+            var totalNumBooks = _bookContext.Books.Count();
+
+            return Ok(new
+            {
+                Books = something,
+                TotalNumBooks = totalNumBooks
+            });
         }
     }
 }
