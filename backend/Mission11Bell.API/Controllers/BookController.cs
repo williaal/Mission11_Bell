@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System.Security.Cryptography.X509Certificates;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Mission11Bell.API.Data;
 
@@ -12,14 +13,21 @@ namespace Mission11Bell.API.Controllers
         public BookController(BookDbContext temp) => _bookContext = temp;
 
         [HttpGet("AllBooks")]
-        public IActionResult GetProjects(int pageHowMany = 5, int pageNum = 1)
+        public IActionResult GetProjects(int pageHowMany = 5, int pageNum = 1, [FromQuery] List<string>? bookTypes = null)
         {
-            var something = _bookContext.Books
+            var query = _bookContext.Books.AsQueryable();
+
+            if (bookTypes != null && bookTypes.Any())
+            {
+                query = query.Where(b => bookTypes.Contains(b.Category));
+            }
+
+            var totalNumBooks = query.Count();
+
+            var something = query
             .Skip((pageNum - 1) * pageHowMany)
             .Take(pageHowMany)
             .ToList();
-
-            var totalNumBooks = _bookContext.Books.Count();
 
             return Ok(new
             {
@@ -27,5 +35,16 @@ namespace Mission11Bell.API.Controllers
                 TotalNumBooks = totalNumBooks
             });
         }
-    }
+        [HttpGet("GetBookTypes")]
+            public IActionResult GetBookTypes ()
+                {
+            var bookTypes = _bookContext.Books
+                .Select(b => b.Category)
+                .Distinct()
+                .ToList();
+
+            return Ok(bookTypes);
+                }
+        }
 }
+

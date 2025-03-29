@@ -1,8 +1,9 @@
 // export default BookList;
 import { useEffect, useState } from 'react';
-import { Book } from './types/Book';
+import { Book } from '../types/Book';
+import { useNavigate } from 'react-router-dom';
 
-function BookList() {
+function BookList({ selectedCategories }: { selectedCategories: string[] }) {
   const [books, setBooks] = useState<Book[]>([]);
   const [pageSize, setPageSize] = useState<number>(5);
   const [pageNum, setPageNum] = useState<number>(1);
@@ -10,11 +11,16 @@ function BookList() {
   const [totalPages, setTotalPages] = useState<number>(0);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [sortedBooks, setSortedBooks] = useState<Book[]>([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchBooks = async () => {
+      const categoryParams = selectedCategories
+        .map((cat) => `bookTypes=${encodeURIComponent(cat)}`)
+        .join('&');
+
       const response = await fetch(
-        `https://localhost:5000/api/Book/AllBooks?pageHowMany=${pageSize}&pageNum=${pageNum}`
+        `https://localhost:5000/api/Book/AllBooks?pageHowMany=${pageSize}&pageNum=${pageNum}${selectedCategories.length ? `&${categoryParams}` : ``}`
       );
       const data = await response.json();
       setBooks(data.books);
@@ -23,7 +29,7 @@ function BookList() {
     };
 
     fetchBooks();
-  }, [pageSize, pageNum, totalItems]);
+  }, [pageSize, pageNum, totalItems, selectedCategories]);
 
   useEffect(() => {
     // Sort books when books array or sort order changes
@@ -43,15 +49,18 @@ function BookList() {
 
   return (
     <>
-      <h1>Books</h1>
+      <br></br>
       <div className="mb-3">
-        <button className="btn btn-primary" onClick={toggleSortOrder}>
+        <button
+          className="btn btn-primary opacity-75"
+          onClick={toggleSortOrder}
+        >
           Sort by Title {sortOrder === 'asc' ? '(A-Z)' : '(Z-A)'}
         </button>
       </div>
       <br></br>
       {sortedBooks.map((b) => (
-        <div id="bookCard" className="card" key={b.bookID}>
+        <div id="bookCard" className="card shadow-lg mb-4" key={b.bookID}>
           <h3 className="card-title">{b.title}</h3>
           <div className="card-body">
             <ul className="list-unstyled">
@@ -83,6 +92,15 @@ function BookList() {
                 <strong>Price: </strong>${b.price}
               </li>
             </ul>
+
+            <button
+              className="btn btn-success"
+              onClick={() =>
+                navigate(`/donate/${b.title}/${b.price}/${b.bookID}`)
+              }
+            >
+              Buy Now
+            </button>
           </div>
         </div>
       ))}
