@@ -1,0 +1,4 @@
+{
+  "appService.defaultWebAppToDeploy": "undefined/subscriptions/1e35c959-7404-4270-ac23-fc05f7bd391d/resourceGroups/appsvc_windows_eastus/providers/Microsoft.Web/sites/Mission13-Bell-Backend",
+  "appService.deploySubpath": "backend\\Mission11Bell.API\\publish"
+}
